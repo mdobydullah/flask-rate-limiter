@@ -1,6 +1,6 @@
 ## Flask Rate Limiter
 
-A lightweight, customizable **token bucket rate limiter** for Flask applications using Redis. Supports per-route, per-IP throttling with human-readable decorators like:
+A lightweight, customizable **rate limiter** for Flask applications using Redis. Supports per-route, per-IP throttling with human-readable decorators like:
 
 ```python
 @ratelimit(key='ip', rate='3/m', mode='fixed')
