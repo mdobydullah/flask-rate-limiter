@@ -36,12 +36,21 @@ class RateLimiter:
 
 
 def fixed_window(redis_client, key, limit, ttl):
-    count = redis_client.incr(key)
-    if count == 1:
-        redis_client.expire(key, ttl)
-    remaining = max(0, limit - count)
+    ttl_remaining = redis_client.ttl(key)
 
-    return count <= limit, remaining
+    if ttl_remaining == -2:
+        # First request → set to (limit - 1)
+        redis_client.set(key, limit - 1, ex=ttl)
+        return True, limit - 1
+
+    remaining_raw = redis_client.get(key)
+    remaining = int(remaining_raw) if remaining_raw is not None else 0
+
+    if remaining <= 0:
+        return False, 0
+
+    redis_client.decr(key)
+    return True, remaining - 1
 
 
 def token_bucket(redis_client, key_tokens, key_timestamp, limit, refill_rate, ttl):
